@@ -6,6 +6,9 @@
 *.pkl
 # Excel Files
 *.xlsx
+# Text files
+*.txt
+
 
 
 
