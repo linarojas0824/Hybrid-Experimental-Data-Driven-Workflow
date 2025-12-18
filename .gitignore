@@ -1,0 +1,12 @@
+# Ignore Database
+*.db
+#Ignore Slurm files
+*.slurm
+# Data saved as pickle
+*.pkl
+# Excel Files
+*.xlsx
+
+
+
+
