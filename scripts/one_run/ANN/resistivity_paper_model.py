@@ -1,3 +1,19 @@
+"""
+This script is adapted from:
+
+Author: Taeyeop Kim and Dongwoo Lee
+Title: Unveiling Key Descriptors for Electrical Resistivity of Alloys 
+Using High-Throughput Experiments and Explainable AI
+Repository: https://github.com/TaeyeopK/ML-for-Electrical-Resistivity-of-Alloys.git
+Year: 2025
+License: MIT
+
+Modifications by: Lina Rojas
+Date: 2026-02-20
+Description of changes:
+- Modified descriptors
+"""
+
 import os
 import json
 import time
@@ -6,7 +22,7 @@ import pandas as pd
 import numpy as np
 
 import tensorflow as tf
-from model.ANN import Net
+from models_scripts.ANN import Net
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score
 import warnings
