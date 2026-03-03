@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH --job-name=ANN_Pred_cualni
+#SBATCH --output=logs/output_%x.log
+#SBATCH --error=logs/error_%x.log
+#SBATCH --time=00:10:00
+#SBATCH --account=hpc_mcpeak15
+#SBATCH --partition=single   
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+
+set -euo pipefail
+mkdir -p logs
+
+module load python
+source ~/venvs/tf_ann/bin/activate
+
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export TF_NUM_INTRAOP_THREADS=$SLURM_CPUS_PER_TASK
+export TF_NUM_INTEROP_THREADS=2
+
+srun python predict_customize_model_cualni.py
