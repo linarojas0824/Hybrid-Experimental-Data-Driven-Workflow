@@ -1,13 +1,25 @@
 from pathlib import Path
 # Project root
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-# Data
+# main paths
 DATA_DIR = PROJECT_ROOT / "data"
-DATABASE_DIR = DATA_DIR / "databases"
-DB_FILE = DATABASE_DIR / "Ternary_round1.db"
-# Results
 RESULTS_DIR = PROJECT_ROOT / "results"
+SCRIPTS_DIR = PROJECT_ROOT / "scripts"
+TESTS_DIR = PROJECT_ROOT / "tests"
 SRC_DIR = PROJECT_ROOT / "src"
-MODELS_DIR = SRC_DIR / "models"
+
+# Data paths
+DATABASE_DIR = DATA_DIR / "databases"
+DESCRIPTORS_DIR = DATA_DIR / "descriptors_data"
+RAW_DIR = DATA_DIR / "raw"
+
+# Results paths
+PLOTS_DIR = RESULTS_DIR/ "Plots"
 PREDICTIONS_DIR = RESULTS_DIR / "predictions"
-LOGS_DIR = RESULTS_DIR / "logs"
+TABLES_DIR = RESULTS_DIR/ "Tables"
+RESULTS_DIR = PROJECT_ROOT / "results"
+ 
+# src paths
+MODELS_DIR = SRC_DIR/ "models"
+MODELS_SCR_DIR = SRC_DIR / "models_scripts"
+
