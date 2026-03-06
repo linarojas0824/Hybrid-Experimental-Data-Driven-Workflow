@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Iterable, Optional, Tuple, List, Union,Sequence
+from scipy.optimize import least_squares
 
 import numpy as np
 
