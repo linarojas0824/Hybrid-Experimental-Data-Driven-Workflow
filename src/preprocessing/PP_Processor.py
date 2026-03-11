@@ -42,22 +42,19 @@ class DataCollector:
 
         if select_power == "max":
             idx = files_index.groupby("sample")["power_mW"].idxmax()
+            selected = files_index.loc[idx]
 
         elif select_power == "min":
             idx = files_index.groupby("sample")["power_mW"].idxmin()
+            selected = files_index.loc[idx]
 
         elif isinstance(select_power, (int, float)):
-            # choose the power closest to the requested value
-            idx = (
-                files_index.assign(diff=(files_index["power_mW"] - select_power).abs())
-                .groupby("sample")["diff"]
-                .idxmin()
-            )
+            selected = files_index[files_index["power_mW"] == select_power]
 
         else:
             raise ValueError("select_power must be 'max', 'min', or a numeric value")
 
-        selected = files_index.loc[idx].sort_values("sample")
+        selected = selected.sort_values("sample")
 
         return files_index, selected
     

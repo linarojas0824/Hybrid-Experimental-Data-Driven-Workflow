@@ -111,7 +111,9 @@ class Plotter:
         linewidth: float = 1.6,
         alpha: float = 0.9,
         add_colorbar: bool = True,
+        linestyle: str = "-",
         cbar_label: str = "Wavelength (nm)",
+        label: Optional[str] = None,
         cmap_colors: Tuple[Tuple[int,int,int], Tuple[int,int,int], Tuple[int,int,int]] = (
             (128, 128, 128),
             (0, 0, 255),
@@ -158,7 +160,8 @@ class Plotter:
             _, ax = plt.subplots(figsize=figsize)
 
         for w, y in zip(wl, Y):
-            ax.plot(time, y, color=cmap(norm(w)), linewidth=linewidth, alpha=alpha, label=f"{w:g} nm")
+            label = label if label is not None else f"{w:g} nm"
+            ax.plot(time, y, color=cmap(norm(w)), linewidth=linewidth, alpha=alpha,linestyle=linestyle, label=label)
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)

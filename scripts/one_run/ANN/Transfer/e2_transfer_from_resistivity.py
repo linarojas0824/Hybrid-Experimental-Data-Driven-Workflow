@@ -77,3 +77,5 @@ model.fit(
 )
 #============== SAVE MODEL =====================#
 model.save(MODELS_DIR/"TL_Small_Similar_e2.keras", include_optimizer=False)
+
+#============== PREDICT SPACE  =====================#
