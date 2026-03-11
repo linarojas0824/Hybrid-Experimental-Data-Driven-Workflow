@@ -1,0 +1,29 @@
+#!/bin/bash
+#SBATCH --job-name=e2_transfer_random
+#SBATCH --output=logs/output_%x.log
+#SBATCH --error=logs/error_%x.log
+#SBATCH --time=02:00:00
+#SBATCH --account=hpc_mcpeak15
+#SBATCH --partition=single   
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+
+set -euo pipefail
+cd "$SLURM_SUBMIT_DIR"
+cd /work/lrojas4/Combinatorial
+
+mkdir -p logs slurm_files
+
+# Load environment and Python module
+module load python
+source ~/venvs/tf_ann/bin/activate
+
+# Keep threading under control
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export TF_NUM_INTRAOP_THREADS=$SLURM_CPUS_PER_TASK
+export TF_NUM_INTEROP_THREADS=2
+
+# Import works
+export PYTHONPATH=$(pwd)
+
+srun python scripts/e2_transfer_from_resistivity_RD.py

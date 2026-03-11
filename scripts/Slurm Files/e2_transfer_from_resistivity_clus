@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=TL_SS_e2
+#SBATCH --job-name=e2_transfer_cluster
 #SBATCH --output=logs/output_%x.log
 #SBATCH --error=logs/error_%x.log
 #SBATCH --time=02:00:00
@@ -26,4 +26,4 @@ export TF_NUM_INTEROP_THREADS=2
 # Import works
 export PYTHONPATH=$(pwd)
 
-srun python scripts/TL_SS_e2.py
+srun python scripts/e2_transfer_from_resistivity_clus.py
