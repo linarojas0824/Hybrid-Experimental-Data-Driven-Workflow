@@ -18,7 +18,7 @@ PLOTS_DIR = RESULTS_DIR/ "Plots"
 PREDICTIONS_DIR = RESULTS_DIR / "predictions"
 SAMPLING_DIR = RESULTS_DIR/ "Sampling"
 TABLES_DIR = RESULTS_DIR/ "Tables"
-RESULTS_DIR = PROJECT_ROOT / "results"
+
  
 # src paths
 MODELS_DIR = SRC_DIR/ "models"
