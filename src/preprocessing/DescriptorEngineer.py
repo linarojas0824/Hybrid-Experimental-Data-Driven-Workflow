@@ -48,7 +48,14 @@ class AlloyDescriptorCalculator:
     def _P(self, elem_cols: pd.Index, prop: str) -> pd.Series:
         if prop not in self.elem_props.columns:
             raise KeyError(f"Property '{prop}' not found in elem_props columns.")
-        return pd.to_numeric(self.elem_props.loc[elem_cols, prop], errors="coerce") 
+        
+        P = pd.to_numeric(self.elem_props.loc[elem_cols, prop], errors="coerce")
+        
+        # Convert atomic radius from pm -A
+        if prop == "atomic_radius":
+            P=P/100.0
+        return P
+    
     def average_property(self, df_comp: pd.DataFrame, prop: str, out_col: str) -> pd.DataFrame:
         """Weighted average: sum_i C_i * P_i."""
         df = df_comp.copy()
@@ -63,7 +70,7 @@ class AlloyDescriptorCalculator:
         self,
         df_comp: pd.DataFrame,
         r_col: str,
-        out_col: str = "delta_r",
+        out_col: str = "del_r",
         r_ave_col: str = "r_ave",
     ) -> pd.DataFrame:
         """delta_r = sqrt( sum_i C_i * (1 - r_i / r_ave)^2 )
@@ -127,7 +134,7 @@ class AlloyDescriptorCalculator:
         df = df_comp.copy()
 
         df = self.average_property(df, prop="atomic_radius", out_col="r")  # avg radius
-        df = self.atomic_radius_mismatch(df, r_col="atomic_radius", out_col="del_r", r_ave_col="r_ave")
+        df = self.atomic_radius_mismatch(df, r_col="atomic_radius", out_col="del_r", r_ave_col="r")
         df = self.electronegativity_diff(df, en_col="electronegativity", out_col="del_EN")
         df = self.mixing_entropy(df, out_col="S", R=self.R)
         df = self.average_property(df, prop="valence_electrons", out_col="VEC")
