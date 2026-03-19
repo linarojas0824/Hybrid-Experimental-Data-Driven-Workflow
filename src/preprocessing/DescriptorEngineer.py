@@ -1,4 +1,5 @@
 from __future__ import annotations
+from utils.paths import DESCRIPTORS_DIR
 
 from dataclasses import dataclass
 from typing import Optional
@@ -8,13 +9,10 @@ import pandas as pd
 
 class ElementPropertyLoader:
 
-    def __init__(self, path_root: str):
-        self.path_root = path_root
-
     def load(self):
-        atomic_radius = pd.read_pickle(f"{self.path_root}/Atomic_radius.pkl")
-        electronegativity = pd.read_pickle(f"{self.path_root}/electronegativity.pkl")
-        valence_electrons = pd.read_pickle(f"{self.path_root}/Valence_electrons.pkl")
+        atomic_radius = pd.read_pickle(DESCRIPTORS_DIR/"Atomic_radius.pkl")
+        electronegativity = pd.read_pickle(DESCRIPTORS_DIR/"electronegativity.pkl")
+        valence_electrons = pd.read_pickle(DESCRIPTORS_DIR/"Valence_electrons.pkl")
 
         atomic_radius = atomic_radius.set_index("symbol")
         electronegativity = electronegativity.set_index("Symbol")
@@ -140,4 +138,10 @@ class AlloyDescriptorCalculator:
         df = self.average_property(df, prop="valence_electrons", out_col="VEC")
 
         return df
+    
+    def transform(self, df_comp: pd.DataFrame) -> pd.DataFrame:
+        """
+        Convenience method: same as add_all_descriptors.
+        """
+        return self.add_all_descriptors(df_comp)
     
