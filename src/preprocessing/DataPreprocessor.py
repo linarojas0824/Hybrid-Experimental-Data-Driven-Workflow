@@ -1,5 +1,8 @@
+from typing import Optional
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from dataclasses import dataclass
 from sklearn.cluster import KMeans
 import pandas as pd
@@ -84,26 +87,112 @@ class DataSplitter:
             cluster_split["y_train"] = y_train
             cluster_split["y_test"] = y_test
 
-            # Extra useful info
-            cluster_split["train_idx"] = train_idx
-            cluster_split["test_idx"] = test_idx
-            cluster_split["clusters"] = clusters
-
             return cluster_split
 
         else:
             raise ValueError("split_method must be 'random' or 'cluster'")
 
 class DataPreprocessor:
-    def __init__(self, test_size=0.2, random_state=42):
-        self.test_size = test_size
-        self.random_state = random_state
-        self.scaler = None
+    @staticmethod
+    def train_test(
+        split_dict,
+        calculator,
+        feature_cols,
+        scaler: Optional[object] = None):
+          
+        # Transform data
+        df_train = calculator.transform(split_dict['X_train_split'])
+        df_test = calculator.transform(split_dict['X_test_split'])
 
-    def fit_transform(self,X_train):
-        self.scaler = StandardScaler()
-        X_train_scaled = self.scaler.fit_transform(X_train)
-        return X_train_scaled
+        # Extract features
+        X_train = df_train[feature_cols].to_numpy()
+        X_test = df_test[feature_cols].to_numpy()
+    
+        # Extract targets
+        y_train = np.asarray(split_dict['y_train']).ravel()
+        y_test = np.asarray(split_dict['y_test']).ravel()
+
+        # Apply scaling if provided
+        if scaler is not None:
+            x_train = scaler.fit_transform(X_train)
+            x_test = scaler.transform(X_test)
+        else:
+            x_train = X_train
+            x_test = X_test
+
+        return x_train, x_test, y_train, y_test,scaler
+    
+    @staticmethod
+    def gp_predict_and_errors(
+        calculator,
+        df_inse,
+        gp_model,
+        scaler=None,
+        X_test=None,
+        y_test=None,
+        feature_cols = ['r','del_r','del_EN','S','VEC'],
+        pred_col="e2",
+        std_col="std"
+    ):
+
+
+        comp_space = calculator.transform(df_inse)
+        df_pred = comp_space.copy()
+
+        X_space = comp_space[feature_cols].to_numpy() if isinstance(comp_space, pd.DataFrame) else np.asarray(comp_space)
+
+        if scaler is not None:
+            X_space_proc = scaler.transform(X_space)
+        else:
+            X_space_proc = X_space
+
+        y_space_pred, y_space_std = gp_model.predict(X_space_proc, return_std=True)
+
+        df_pred[pred_col] = y_space_pred
+        df_pred[std_col] = y_space_std
+
+        # ---- Initialize error outputs ----
+        error_dict = {
+            "mae": None,
+            "rmse": None,
+            "r2": None,
+            "df_residuals": pd.DataFrame()
+        }
+
+        # ---- Evaluate on test set if provided ----
+        if X_test is not None and y_test is not None:
+            X_test_arr = X_test.to_numpy() if isinstance(X_test, pd.DataFrame) else np.asarray(X_test)
+            y_test_arr = np.asarray(y_test).ravel()
+
+            if scaler is not None:
+                X_test_proc = scaler.transform(X_test_arr)
+            else:
+                X_test_proc = X_test_arr
+
+            y_test_pred = gp_model.predict(X_test_proc)
+
+            mae = mean_absolute_error(y_test_arr, y_test_pred)
+            rmse = np.sqrt(mean_squared_error(y_test_arr, y_test_pred))
+            r2 = r2_score(y_test_arr, y_test_pred)
+
+            residuals = y_test_arr - y_test_pred
+
+            df_residuals = pd.DataFrame({
+            "y_true": y_test_arr,
+            "y_pred": y_test_pred,
+            "error": residuals,
+            "error_abs": np.abs(residuals),
+            "error_sq": residuals**2
+            })
+            
+            error_dict = {
+                "mae": mae,
+                "rmse": rmse,
+                "r2": r2,
+                "df_residuals": df_residuals
+            }
+
+        return df_pred, error_dict
     
     #---------------- Multiply the DR electronic data by the composition ----------------------- #
     @staticmethod
