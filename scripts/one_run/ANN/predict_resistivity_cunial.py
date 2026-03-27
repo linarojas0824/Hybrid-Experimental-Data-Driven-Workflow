@@ -1,5 +1,5 @@
 # Paths
-from src.utils.paths import MODELS_DIR, SAMPLING_DIR, PREDICTIONS_DIR, MODELS_DIR
+from src.utils.paths import MODELS_DIR, RAW_DIR, PREDICTIONS_DIR, MODELS_DIR
 
 # Libraries
 import tensorflow as tf
@@ -13,28 +13,13 @@ PRETRAINED_PATH = MODELS_DIR/"ANN_customized.h5"
 
 
 #========= LOAD DATASETS ====================#
-
-with open(SAMPLING_DIR/"random_split", "rb") as f:
-    random_split = pickle.load(f)
-
-X_train_random = random_split['X_train_split'].copy()
-X_test_random = random_split['X_test_split'].copy()
-
 columns_names = ["r", "del_r", "del_EN", "S", "VEC"]
 comp_colum = ["Cu","Ni","Al"]
 
-df_comp = pd.concat(
-    [X_train_random[comp_colum], X_test_random[comp_colum]],
-    axis=0,
-    ignore_index=True
-)
+X_exp_data = pd.read_pickle(RAW_DIR/"descriptors_exp.pkl")
+df_comp = X_exp_data[comp_colum]
 
-X_train_random = X_train_random[columns_names]
-X_test_random = X_test_random[columns_names]
-
-X = np.asarray(X_train_random, dtype=float)
-X_test = np.asarray(X_test_random, dtype=float)
-x_all = np.concatenate((X, X_test), axis=0)
+x_all = np.asarray(X_exp_data[columns_names])
 
 #========= SCALE ====================#
 scaler = MinMaxScaler()
@@ -42,17 +27,14 @@ X_all_scale = scaler.fit_transform(x_all)
 
 
 #========= PREDICTION ====================#
-PRETRAINED_PATH = MODELS_DIR / "ANN_customized.h5"
 model = tf.keras.models.load_model(str(PRETRAINED_PATH))
 
-exp_data = model(tf.convert_to_tensor(X_all_scale, dtype=tf.float32)).numpy()
 exp_data = model.predict(X_all_scale, verbose=0).reshape(-1)
 
 #========= SAVE DOCUMENT ====================#
 
-exp_resis_predic = pd.DataFrame()
-exp_resis_predic[comp_colum] = df_comp
-exp_resis_predic[columns_names] = x_all
+exp_resis_predic = pd.DataFrame(x_all, columns=columns_names)
+exp_resis_predic[comp_colum] = df_comp.values
 exp_resis_predic['resistivity'] = exp_data
 
 
