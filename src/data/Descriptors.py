@@ -47,6 +47,35 @@ class AlloyDescriptorCalculator:
 
             elif prop == "ionization_energy_2":
                 value = el.ionenergies.get(2)
+            
+            elif prop in ["valence_s", "valence_p", "valence_d"]:
+                import re
+
+                econf = el.econf
+                matches = re.findall(r"(\d+)([spd])(\d*)", econf)
+
+                if not matches:
+                    raise ValueError(
+                        f"Could not parse electron configuration for element '{elem_symbol}': {econf}"
+                    )
+
+                n_max = max(int(n) for n, _, _ in matches)
+
+                valence_counts = {"s": 0, "p": 0, "d": 0}
+
+                # outer shell contributions: ns, np
+                for n, orb, num in matches:
+                    occ = int(num) if num else 1 
+                    if int(n) == n_max:
+                        valence_counts[orb] += occ
+
+                # include (n-1)d for transition metals
+                for n, orb, num in matches:
+                    occ = int(num) if num else 1 
+                    if orb == "d" and int(n) == n_max - 1:
+                        valence_counts["d"] += occ
+
+                value = valence_counts[prop.split("_")[-1]]
 
             else:
                 real_prop = alias_map.get(prop, prop)
@@ -62,7 +91,7 @@ class AlloyDescriptorCalculator:
                     value = value()
 
             self.property_cache[key] = value
-
+            
         return self.property_cache[key]
 
     def _P(self, elem_cols: pd.Index, prop: str) -> pd.Series:
