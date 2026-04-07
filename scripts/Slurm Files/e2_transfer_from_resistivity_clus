@@ -2,7 +2,7 @@
 #SBATCH --job-name=e2_transfer_cluster
 #SBATCH --output=logs/output_%x.log
 #SBATCH --error=logs/error_%x.log
-#SBATCH --time=02:00:00
+#SBATCH --time=00:30:00
 #SBATCH --account=hpc_mcpeak15
 #SBATCH --partition=single   
 #SBATCH --ntasks=1

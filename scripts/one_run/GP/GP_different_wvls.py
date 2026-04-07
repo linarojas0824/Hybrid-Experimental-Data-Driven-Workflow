@@ -1,13 +1,14 @@
-from utils.paths import DATABASE_DIR,PREDICTIONS_DIR
+from src.utils.paths import DATABASE_DIR,PREDICTIONS_DIR
 
-from preprocessing.gp_workflow import ExperimentalGPApproach
-from preprocessing.data_loading import load_table
-from preprocessing.processing import merge_data
-from preprocessing.splitting import DataSplitter
-from preprocessing.Descriptors import AlloyDescriptorCalculator
+from src.preprocessing.gp_workflow import ExperimentalGPApproach
+from src.preprocessing.data_loading import load_table
+from src.preprocessing.processing import merge_data
+from src.preprocessing.splitting import DataSplitter
+from src.preprocessing.Descriptors import AlloyDescriptorCalculator
 
 import pandas as pd
 import numpy as np
+import time
 
 
 df_optical = load_table(DATABASE_DIR / "Ternary_round1.db", "Optical_properties")
@@ -19,6 +20,7 @@ df_merged_all = merge_data(df_merged, df_resis_ANN[['ID','resistivity']])
 
 
 def evaluate_wavelength(df, wavelength, descriptor_spec):
+    t0 = time.time()
     
     # --- Filter ---
     df_wl = df[df["wavelength_nm"] == wavelength].reset_index(drop=True)
@@ -28,6 +30,7 @@ def evaluate_wavelength(df, wavelength, descriptor_spec):
     y = df_wl["e2"]
 
     # --- Split ---
+    t1 = time.time()
     splitter = DataSplitter(
         test_size=0.2,
         random_state=42,
@@ -37,6 +40,7 @@ def evaluate_wavelength(df, wavelength, descriptor_spec):
     split_dict = splitter.split(X, y)
 
     # --- Descriptors ---
+    t2 = time.time()
     calc = AlloyDescriptorCalculator()
 
     x_train = calc.transform(split_dict["X_train"], descriptor_spec=descriptor_spec, include_entropy=True)
@@ -46,6 +50,7 @@ def evaluate_wavelength(df, wavelength, descriptor_spec):
     y_test  = split_dict["y_test"]
 
     # --- GP ---
+    t3 = time.time()
     gp_exp = ExperimentalGPApproach(
         random_state=42,
         n_splits=5,
@@ -59,6 +64,9 @@ def evaluate_wavelength(df, wavelength, descriptor_spec):
         X_test=x_test,
         y_test=y_test,
     )
+    
+    print(f"{wavelength}: GP done in {time.time()-t3:.2f}s")
+    print(f"{wavelength}: total {time.time()-t0:.2f}s")
 
     return {
         "wavelength": wavelength,

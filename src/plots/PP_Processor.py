@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 
-from preprocessing.SignalNoise_Process import SignalProcessor
+from features.SignalNoise_Process import SignalProcessor
 
 
 
