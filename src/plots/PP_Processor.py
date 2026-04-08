@@ -80,6 +80,9 @@ class DataCollector:
         df.index = pd.to_numeric(df.index, errors="coerce").round(round_index)
         
         colnums = pd.to_numeric(df.columns, errors="coerce").round(round_cols)
+        
+        
+        # Keeps the time inside of a range
         mask = (colnums >= low) & (colnums <= high)
         df = df.loc[:, mask]
         
@@ -97,7 +100,7 @@ class DataCollector:
 
         for _, row in selected.iterrows():
 
-            df = self.load_csv(row["path"], round_cols=3, low=0, high=38.8)
+            df = self.load_csv(row["path"], round_cols=3, low=1e-6, high=38.8)
 
             if smooth == "wvl":
                 df = self.sp.denoise_df_by_wvl(df, **smooth_kwargs)

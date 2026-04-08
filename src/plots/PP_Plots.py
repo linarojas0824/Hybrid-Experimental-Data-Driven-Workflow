@@ -28,6 +28,7 @@ class Plotter:
         step: int = 1,
         figsize: Tuple[int, int] = (8, 6),
         xlim: Optional[Tuple[float, float]] = None,
+        ylim: Optional[Tuple[float, float]] = None,
         xlabel: str = "Wavelength (nm)",
         ylabel: str = "dT/T",
         legend: bool = True,
@@ -35,6 +36,7 @@ class Plotter:
         add_colorbar: bool = True,
         cmap_colors=((128, 128, 128), (0, 0, 255), (255, 128, 0)),
         linewidth: float = 1.6,
+        linestyle: str = "-",
         ax=None,
     ):
         x = pd.to_numeric(df.index, errors="coerce").to_numpy(dtype=float)
@@ -78,12 +80,20 @@ class Plotter:
             if isinstance(y, pd.DataFrame):  # duplicate time columns
                 y = y.iloc[:, 0]
             color = cmap(norm(t)) if use_cmap else None
-            ax.plot(x, y.to_numpy(), color=color, linewidth=linewidth, label=f"{t:g}")
+            ax.plot(
+                x, y.to_numpy(), 
+                color=color, 
+                linewidth=linewidth, 
+                linestyle=linestyle, 
+                label=f"{t:g}")
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if xlim is not None:
             ax.set_xlim(*xlim)
+        
+        if ylim is not None:
+            ax.set_ylim(*ylim)
 
         if legend:
             ax.legend(title="Time", fontsize=8)
@@ -160,8 +170,15 @@ class Plotter:
             _, ax = plt.subplots(figsize=figsize)
 
         for w, y in zip(wl, Y):
-            label = label if label is not None else f"{w:g} nm"
-            ax.plot(time, y, color=cmap(norm(w)), linewidth=linewidth, alpha=alpha,linestyle=linestyle, label=label)
+            line_label = label if label is not None else f"{w:g} nm"
+            ax.plot(
+                time, 
+                y, 
+                color=cmap(norm(w)), 
+                linewidth=linewidth, 
+                alpha=alpha,
+                linestyle=linestyle, 
+                label=line_label)
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
