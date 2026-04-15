@@ -29,10 +29,11 @@ class BaseGPApproach:
     def fit(self, X, y):
         raise NotImplementedError
 
-    def predict(self, X):
+    def predict(self, X, return_std: bool = False):
         if self.model_ is None:
             raise ValueError("The model has not been fitted yet.")
-        return self.model_.predict(X)
+    
+        return self.model_.predict(X, return_std=return_std)
 
     def evaluate(self, X, y) -> Dict[str, float]:
         """
