@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 
@@ -11,6 +12,7 @@ class DataSplitter:
     split_method: str = "random"   # "random" or "cluster"
     n_clusters: int = 4
     cluster_feature_start: int = 3
+    force_pure_train: bool = False
 
     def split(self, X, y):
         if self.split_method == "random":
@@ -19,6 +21,57 @@ class DataSplitter:
             return self._cluster_split(X, y)
         else:
             raise ValueError("split_method must be 'random' or 'cluster'")
+    
+    def _split_with_pure_train(self, X, y):
+        pure_mask = self._get_pure_mask(X)
+
+        if hasattr(X, "iloc"):
+            X_pure = X.loc[pure_mask].copy()
+            X_main = X.loc[~pure_mask].copy()
+        else:
+            X_pure = X[pure_mask]
+            X_main = X[~pure_mask]
+
+        if hasattr(y, "iloc"):
+            y_pure = y.loc[pure_mask].copy()
+            y_main = y.loc[~pure_mask].copy()
+        else:
+            y_pure = y[pure_mask]
+            y_main = y[~pure_mask]
+
+        if self.split_method == "random":
+            split_dict = self._random_split(X_main, y_main)
+        elif self.split_method == "cluster":
+            split_dict = self._cluster_split(X_main, y_main)
+        else:
+            raise ValueError("split_method must be 'random' or 'cluster'")
+
+        split_dict["X_train"] = pd.concat([split_dict["X_train"], X_pure], ignore_index=True)
+        split_dict["y_train"] = pd.concat([split_dict["y_train"], y_pure], ignore_index=True)
+
+        return split_dict
+    
+    def _get_pure_mask(self, X):
+        if not hasattr(X, "columns"):
+            raise ValueError("force_pure_train=True requires X to be a pandas DataFrame")
+
+        required_cols = ["Cu", "Ni", "Al"]
+        for col in required_cols:
+            if col not in X.columns:
+                raise ValueError(f"Column '{col}' is required to detect pure compositions")
+
+        comp = X[required_cols].astype(float).copy()
+        tol = 1e-8
+
+        total = comp.sum(axis=1)
+
+        pure_mask = (
+            (np.isclose(comp["Cu"], total, atol=tol) & np.isclose(comp["Ni"], 0, atol=tol) & np.isclose(comp["Al"], 0, atol=tol)) |
+            (np.isclose(comp["Ni"], total, atol=tol) & np.isclose(comp["Cu"], 0, atol=tol) & np.isclose(comp["Al"], 0, atol=tol)) |
+            (np.isclose(comp["Al"], total, atol=tol) & np.isclose(comp["Cu"], 0, atol=tol) & np.isclose(comp["Ni"], 0, atol=tol))
+        )
+
+        return pure_mask
 
     def _random_split(self, X, y):
         X_train, X_test, y_train, y_test = train_test_split(

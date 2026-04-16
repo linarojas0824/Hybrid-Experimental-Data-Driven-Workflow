@@ -4,6 +4,7 @@ from typing import Sequence, Optional, Tuple
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import ternary
 
 
@@ -53,8 +54,29 @@ def plot_ternary_heatmap(
     if data_df.empty:
         raise ValueError("No valid rows remain after dropping NaNs.")
 
-    # Convert compositions from 0-100% to ternary lattice coordinates
-    coords = (data_df[list(comp_cols)] / 100 * scale).round().astype(int)
+    # -----------------------------
+    # Detect composition scale (0–1 or 0–100)
+    # -----------------------------
+    comps = data_df[list(comp_cols)].astype(float).copy()
+
+    row_sums = comps.sum(axis=1)
+
+    # If sums ~1 → convert to %
+    if np.allclose(row_sums.mean(), 1.0, atol=0.05):
+        comps = comps * 100
+
+    # If sums ~100 → do nothing
+    elif np.allclose(row_sums.mean(), 100.0, atol=5):
+        pass
+
+    # Otherwise normalize (safe fallback)
+    else:
+        comps = comps.div(row_sums, axis=0) * 100
+
+    # -----------------------------
+    # Convert to ternary lattice
+    # -----------------------------
+    coords = (comps / 100 * scale).round().astype(int)
 
     # Fix rounding drift so each row sums exactly to 'scale'
     drift = scale - coords.sum(axis=1)
