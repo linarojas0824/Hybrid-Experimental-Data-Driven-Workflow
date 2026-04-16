@@ -1,0 +1,76 @@
+
+# Ternary round 1 - Initial descriptors selection
+experiment_name: gp_1550_cluster_with_descriptors
+
+# -------------------------------
+# Data loading
+# -------------------------------
+data:
+  database:
+    name: Ternary_round1.db
+    tables:
+      optical: Optical_properties
+      compositions: compositions
+      resistivity: ANN_resistivity
+
+# -------------------------------
+# Preprocessing
+# -------------------------------
+preprocessing:
+  wavelength: 1550  # wavelength to filter optical data
+  merge_resistivity: true  # merge ANN resistivity into dataset
+
+  features:
+    - Cu
+    - Ni
+    - Al
+    - resistivity  # ANN-predicted resistivity
+
+  target: e2  # optical property to predict
+
+# -------------------------------
+# Splitting
+# -------------------------------
+split:
+  test_size: 0.20
+  random_state: 42
+  split_method: cluster  # options: "random", "cluster"
+  n_clusters: 8
+  force_pure_train: true  # ensure pure metals are always in training set
+
+# -------------------------------
+# Descriptor calculation
+# -------------------------------
+descriptors:
+  include_entropy: true
+
+  spec:
+    metallic_radius: [avg, mismatch]
+    valence_electrons: [avg]
+    density: [avg]
+    ionization_energy_2: [avg, mismatch]
+    valence_s: [mismatch]
+    valence_d: [mismatch]
+  
+  feature_assembly:
+  add_composition_columns: False
+  add_resistivity: False
+
+# -------------------------------
+# Model (Gaussian Process)
+# -------------------------------
+model:
+  type: experimental_gp
+  random_state: 42
+  n_splits: 5  # cross-validation folds
+  scoring: r2
+  n_restarts_optimizer: 5
+
+# -------------------------------
+# Notes (optional but VERY useful)
+# -------------------------------
+notes: |
+  - Using cluster-based split to enforce compositional diversity
+  - Including ANN resistivity as feature
+  - Testing descriptor-based GP vs raw composition
+  - Pure elements forced into training

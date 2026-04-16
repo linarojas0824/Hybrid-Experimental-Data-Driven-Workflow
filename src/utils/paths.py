@@ -18,6 +18,7 @@ PLOTS_DIR = RESULTS_DIR/ "Plots"
 PREDICTIONS_DIR = RESULTS_DIR / "predictions"
 SAMPLING_DIR = RESULTS_DIR/ "Sampling"
 TABLES_DIR = RESULTS_DIR/ "Tables"
+EXP_RESULT = RESULTS_DIR/"results"
 
  
 # src paths

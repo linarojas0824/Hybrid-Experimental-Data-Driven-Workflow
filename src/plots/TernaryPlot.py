@@ -189,3 +189,86 @@ def plot_ternary_heatmap(
         plt.close(fig)
 
     return fig, tax
+
+
+def plot_train_test_ternary(
+    split_dict,
+    scale=100,
+    train_color="blue",
+    test_color="orange",
+    train_label="Train",
+    test_label="Test",
+    figsize=(8, 7),
+    point_size_train=60,
+    point_size_test=70,
+):
+    """
+    Plot train/test composition distribution on a ternary diagram.
+    """
+
+    # -----------------------------
+    # Extract compositions
+    # -----------------------------
+    train_comp = np.asarray(
+        split_dict["X_train"][["Cu", "Ni", "Al"]],
+        dtype=float
+    ) * 100
+
+    test_comp = np.asarray(
+        split_dict["X_test"][["Cu", "Ni", "Al"]],
+        dtype=float
+    ) * 100
+
+    # -----------------------------
+    # Convert to ternary points
+    # -----------------------------
+    def to_ternary_points(arr_pct):
+        pts = (arr_pct / 100.0 * scale)
+        return [tuple(p) for p in pts]
+
+    pts_train = to_ternary_points(train_comp)
+    pts_test = to_ternary_points(test_comp)
+
+    # -----------------------------
+    # Plot
+    # -----------------------------
+    fig, tax = ternary.figure(scale=scale)
+    fig.set_size_inches(*figsize)
+
+    tax.scatter(
+        pts_train,
+        marker="o",
+        s=point_size_train,
+        color=train_color,
+        label=train_label
+    )
+
+    tax.scatter(
+        pts_test,
+        marker="o",
+        s=point_size_test,
+        color=test_color,
+        label=test_label
+    )
+
+    # -----------------------------
+    # Styling
+    # -----------------------------
+    tax.boundary(linewidth=2)
+    tax.gridlines(color="gray", multiple=5)
+    tax.ticks(axis="lbr", multiple=20, linewidth=1, fontsize=16)
+
+    tax.left_axis_label("Al", fontsize=16, offset=0.1)
+    tax.right_axis_label("Ni", fontsize=16, offset=0.1)
+    tax.bottom_axis_label("Cu", fontsize=16, offset=0.05)
+
+    tax.clear_matplotlib_ticks()
+    tax.get_axes().axis("off")
+
+    tax.legend(
+        loc="upper right",
+        bbox_to_anchor=(1.25, 1.05),
+        frameon=False
+    )
+
+    return fig, tax

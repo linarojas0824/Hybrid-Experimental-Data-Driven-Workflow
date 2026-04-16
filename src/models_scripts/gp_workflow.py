@@ -43,6 +43,7 @@ class BaseGPApproach:
 
         metrics = {
             "r2": r2_score(y, y_pred),
+            "mse": mean_squared_error(y, y_pred),
             "rmse": float(np.sqrt(mean_squared_error(y, y_pred))),
             "mae": mean_absolute_error(y, y_pred),
         }

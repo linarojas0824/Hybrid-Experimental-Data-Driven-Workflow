@@ -15,13 +15,16 @@ class DataSplitter:
     force_pure_train: bool = False
 
     def split(self, X, y):
+        if self.force_pure_train:
+            return self._split_with_pure_train(X, y)
+
         if self.split_method == "random":
             return self._random_split(X, y)
         elif self.split_method == "cluster":
             return self._cluster_split(X, y)
         else:
             raise ValueError("split_method must be 'random' or 'cluster'")
-    
+
     def _split_with_pure_train(self, X, y):
         pure_mask = self._get_pure_mask(X)
 
@@ -46,10 +49,16 @@ class DataSplitter:
         else:
             raise ValueError("split_method must be 'random' or 'cluster'")
 
-        split_dict["X_train"] = pd.concat([split_dict["X_train"], X_pure], ignore_index=True)
-        split_dict["y_train"] = pd.concat([split_dict["y_train"], y_pure], ignore_index=True)
+        if hasattr(split_dict["X_train"], "iloc"):
+            split_dict["X_train"] = pd.concat([split_dict["X_train"], X_pure], ignore_index=True)
+            split_dict["y_train"] = pd.concat([split_dict["y_train"], y_pure], ignore_index=True)
+        else:
+            split_dict["X_train"] = np.concatenate([split_dict["X_train"], X_pure], axis=0)
+            split_dict["y_train"] = np.concatenate([split_dict["y_train"], y_pure], axis=0)
 
         return split_dict
+    
+
     
     def _get_pure_mask(self, X):
         if not hasattr(X, "columns"):
