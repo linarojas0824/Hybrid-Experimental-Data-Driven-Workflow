@@ -1,0 +1,39 @@
+experiment: exp_02
+best_score_cv: 0.1661752276586947
+best_params:
+  gp__alpha: 0.0001
+  gp__kernel: !!python/object:sklearn.gaussian_process.kernels.Sum
+    k1: !!python/object:sklearn.gaussian_process.kernels.Product
+      k1: !!python/object:sklearn.gaussian_process.kernels.ConstantKernel
+        constant_value: 1.0
+        constant_value_bounds: !!python/tuple
+        - 0.001
+        - 1000.0
+      k2: !!python/object:sklearn.gaussian_process.kernels.Matern
+        length_scale: 1.0
+        length_scale_bounds: !!python/tuple
+        - 0.01
+        - 100.0
+        nu: 2.5
+    k2: !!python/object:sklearn.gaussian_process.kernels.WhiteKernel
+      noise_level: 1.0e-05
+      noise_level_bounds: !!python/tuple
+      - 1.0e-08
+      - 10.0
+  scaler: !!python/object:sklearn.preprocessing._data.StandardScaler
+    with_mean: true
+    with_std: true
+    copy: true
+    _sklearn_version: 1.7.2
+train_metrics:
+  r2: 0.9999999681036688
+  mse: 8.83784454935554e-06
+  rmse: 0.0029728512491134737
+  mae: 0.0018274709600496698
+test_metrics:
+  r2: 0.7323000624161844
+  mse: 69.4809500316331
+  rmse: 8.335523380786181
+  mae: 6.386415976719001
+n_train: 21
+n_test: 7
