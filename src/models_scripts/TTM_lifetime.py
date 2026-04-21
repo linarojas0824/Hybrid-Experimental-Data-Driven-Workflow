@@ -5,6 +5,7 @@ from typing import Iterable, Optional, Tuple, List, Union,Sequence
 from scipy.optimize import least_squares
 
 import numpy as np
+import pandas as pd
 
 
 @dataclass
@@ -15,6 +16,7 @@ class LifetimeFitter:
     loss: str = "linear"  # or "soft_l1"
     scale_residuals: bool = True
     PARAM_NAMES = ["dt_t_nt", "tau_th", "tau_p", "dt_t_th", "dt_t_l"]
+    # PARAM_NAMES = [Non Thermal Amplitude, e-e time constant, e-ph time constant, Thermal amplitude, Residual electronic and lattice contriburtions]
 
     @staticmethod
     def model(time, dt_t_nt, tau_th, tau_p, dt_t_th, dt_t_l):
@@ -126,3 +128,77 @@ class LifetimeFitter:
             "r2": r2,
 
         }
+    def fit_master_at_wavelength(
+        self,
+        master_time,
+        wvl,
+        extract_params=None,
+        drop_columns=("sample", "power_mW"),
+        id_col="ID"
+    ):
+        """
+        Fit lifetime model for all samples at a given wavelength and extract parameters.
+
+        Parameters
+        ----------
+        master_time : dict
+            Dictionary: sample_id -> dataframe
+        wvl : float
+            Target wavelength (closest value in each dataframe is used)
+        extract_params : list[str] or None
+            Parameters to extract from result['params'].
+            Example: ['tau_p', 'tau_th', 'r2']
+            If None, defaults to self.PARAM_NAMES
+        drop_columns : tuple[str]
+         Columns to drop before fitting
+        id_col : str
+            Name of ID column in output dataframe
+
+        """
+        if extract_params is None:
+            extract_params = self.PARAM_NAMES
+
+        results_dict = {}
+        rows = []
+
+        for sample, df in master_time.items():
+            # Clean dataframe
+            df_clean = df.drop(columns=list(drop_columns), errors="ignore")
+
+            # Time axis
+            x = df_clean.columns.to_numpy(dtype=float)
+
+            # Find closest wavelength
+            wvl_array = df_clean.index.to_numpy(dtype=float)
+            idx = np.abs(wvl_array - wvl).argmin()
+            wvl_used = wvl_array[idx]
+
+            # Signal
+            y = df_clean.iloc[idx].to_numpy(dtype=float)
+
+            # Fit (uses your class method)
+            result = self.fit(time=x, y_exp=y)
+
+            # Store full result
+            results_dict[sample] = result
+
+            # Extract parameters
+            params = result.get("params", {})
+
+            row = {
+                id_col: sample,
+                "target_wvl": wvl,
+                "used_wvl": wvl_used
+            }
+
+            for pname in extract_params:
+                row[pname] = (
+                    params[pname] if pname in params
+                    else result.get(pname, np.nan)
+                )
+
+            rows.append(row)
+
+        df_params = pd.DataFrame(rows).set_index(id_col)
+
+        return results_dict, df_params
