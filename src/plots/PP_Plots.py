@@ -216,30 +216,11 @@ class Plotter:
         ax=None,
         show_r2=True,
         param_name=None,
-        legend=True
+        legend=True,
+        legend_fontsize=8,
     ):
         """
         Plot experimental data vs fitted curve.
-
-        Parameters
-        ----------
-        lifetime : dict
-            Fit result dictionary. Must contain 'y_fit'. May contain 'r2' and 'params'.
-        time : array-like
-            Time axis.
-        y_exp : array-like
-            Experimental signal.
-        time_range : tuple or None
-            Time range to display.
-        ylim : tuple or None
-            Y-axis limits.
-        figsize : tuple
-            Figure size if ax is None.
-        ax : matplotlib axis 
-
-        Returns
-        -------
-        ax
         """
         fit_out = lifetime
         y_fit = np.asarray(fit_out["y_fit"], dtype=float)
@@ -272,7 +253,7 @@ class Plotter:
 
         fit_label = " | ".join(label_parts)
 
-        # Plot
+        # Plot first
         ax.plot(time[mask], y_exp[mask], "o", label="exp")
         ax.plot(time[mask], y_fit[mask], "-", label=fit_label)
 
@@ -285,8 +266,11 @@ class Plotter:
         ax.set_xlabel("Time (ps)")
         ax.set_ylabel("dT/T")
 
+        # Legend after plotting
         if legend:
-            ax.legend(fontsize=8)
+            handles, labels = ax.get_legend_handles_labels()
+            if handles:
+                ax.legend(fontsize=legend_fontsize)
 
         if created_fig:
             plt.tight_layout()
@@ -506,6 +490,7 @@ class Plotter:
         show_r2=True,
         param_name=None,
         legend=True,
+        legend_fontsize=8,
         title_fontsize=9
     ):
         """
@@ -592,7 +577,8 @@ class Plotter:
                 ax=ax,
                 show_r2=show_r2,
                 param_name=param_name,
-                legend=legend
+                legend=legend,
+                legend_fontsize=legend_fontsize
             )
 
             match = df_compo.loc[df_compo["ID"] == sample, title_col]
