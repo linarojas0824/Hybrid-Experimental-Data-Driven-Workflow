@@ -21,6 +21,9 @@ def predict_composition_space(
     model,
     include_entropy=True,
     composition_cols=("Cu", "Ni", "Al"),
+    include_composition=False,
+    include_resistivity=False,
+    resistivity_col="resistivity",
     pred_col="e2_pred",
     std_col="e2_std",
 ):
@@ -32,7 +35,24 @@ def predict_composition_space(
         include_entropy=include_entropy
     )
 
-    x_model = x_space.drop(columns=comp_cols)
+    # Start from descriptors only
+    x_model = x_space.drop(columns=comp_cols, errors="ignore")
+
+    # Optionally add composition columns
+    if include_composition:
+        x_model = pd.concat([comp_space[comp_cols], x_model], axis=1)
+
+    # Optionally add resistivity column
+    if include_resistivity:
+        if resistivity_col not in comp_space.columns:
+            raise ValueError(
+                f"Column '{resistivity_col}' is required, but it is not in comp_space."
+            )
+        x_model[resistivity_col] = comp_space[resistivity_col]
+
+    # Match model training columns if available
+    if hasattr(model, "feature_names_in_"):
+        x_model = x_model[list(model.feature_names_in_)]
 
     y_pred, y_std = model.predict(x_model, return_std=True)
 

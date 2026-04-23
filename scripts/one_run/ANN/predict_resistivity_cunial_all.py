@@ -3,7 +3,7 @@ from src.utils.paths import MODELS_DIR, PREDICTIONS_DIR, RAW_DIR
 
 # Libraries
 import tensorflow as tf
-from sklearn.metrics import r2_score
+from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import pickle
 import numpy as np
