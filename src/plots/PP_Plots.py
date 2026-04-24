@@ -457,11 +457,14 @@ class Plotter:
                 add_colorbar=add_colorbar
             )
 
-            match = df_compo.loc[df_compo["ID"] == sample, title_col]
+            match = df_compo.loc[df_compo["ID"] == sample]
             if not match.empty:
-                ax.set_title(str(match.iloc[0]), fontsize=title_fontsize)
+                title_value = match[title_col].iloc[0]
+                id_value = match["ID"].iloc[0]
+
+                ax.set_title(f"{title_value} ({id_value})", fontsize=title_fontsize)
             else:
-                ax.set_title(str(sample), fontsize=title_fontsize)
+                ax.set_title(f"ID: {sample}", fontsize=title_fontsize)
 
         for ax in axes[n:]:
             ax.axis("off")
@@ -581,11 +584,13 @@ class Plotter:
                 legend_fontsize=legend_fontsize
             )
 
-            match = df_compo.loc[df_compo["ID"] == sample, title_col]
+            match = df_compo.loc[df_compo["ID"] == sample]
+
             if not match.empty:
-                ax.set_title(str(match.iloc[0]), fontsize=title_fontsize)
+                title_value = match[title_col].iloc[0]
+                ax.set_title(f"{title_value} (ID: {sample})", fontsize=title_fontsize)
             else:
-                ax.set_title(str(sample), fontsize=title_fontsize)
+                ax.set_title(f"ID: {sample}", fontsize=title_fontsize)
 
         for ax in axes[n:]:
             ax.axis("off")
