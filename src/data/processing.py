@@ -1,8 +1,11 @@
 import numpy as np
 import pandas as pd
 
-def merge_data(df1, df2, on="ID", how="inner"):
-    return df1.merge(df2, on=on, how=how)
+def merge_data(dfs, on="ID", how="inner"):
+    result = dfs[0]
+    for df in dfs[1:]:
+        result = result.merge(df, on=on, how=how)
+    return result
 
 
 def filter_by_wavelength(df, wavelength, tol=1.0):
