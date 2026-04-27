@@ -25,3 +25,6 @@ EXP_RESULT = RESULTS_DIR/"results"
 MODELS_DIR = SRC_DIR/ "models"
 MODELS_SCR_DIR = SRC_DIR / "models_scripts"
 
+##================== R paths ======================
+R_PROJECT_ROOT = "/Users/linarojas/Desktop/Research/Papers/Combinatorial_Ternary/Experimental design"
+
